@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# ManobSheba - Manusher Pase, Manobotar Jonno
 
-## Getting Started
+Live: https://manobsheba-client.vercel.app
+Server: https://manobsheba-server.onrender.com
 
-First, run the development server:
+Social Development Events Platform. Manush eksathe poribesh, sikkha, rokto dan ar manobotar sebay kaj kore.
 
+## Features
+- Home with banner, features, recent 6 events, gallery, newsletter
+- Upcoming with search + type filter (Footer theke click korle filter hoy)
+- Event Details public + Join Event
+- Create Event with validation + future date check
+- Manage My Events - Edit / Delete own events only
+- Joined Events - Date onujayi sajano + Leave
+- Email + Password + Google Login (BetterAuth)
+- Register with Name / Email / photoURL / Password (Upper + Lower + Min 6)
+- JWT protected API
+- Dark / Light Theme Toggle
+- Responsive mobile friendly
+
+## Tech Stack
+- Next.js 16 (App Router), Tailwind CSS, BetterAuth, react-hot-toast
+- Express, MongoDB, Mongoose, JWT
+
+## Routes
+- `/` Home
+- `/upcoming` Upcoming Events
+- `/events/[id]` Event Details
+- `/login` Login
+- `/register` Register
+- `/create` Create Event (Private)
+- `/manage` Manage Events (Private)
+- `/joined` Joined Events (Private)
+- `/profile` Profile (Private)
+
+## Local Run
 ```bash
+cd manobsheba-client
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
