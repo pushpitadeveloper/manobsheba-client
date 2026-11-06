@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn, signInWithGoogle, useSession } from "@/lib/auth-client";
@@ -12,13 +12,19 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { data: session } = useSession();
+  const userEmail = session?.user?.email;
+  const tokenFetched = useRef(false);
 
-  // Google diye fire asle token banano
+  // Google diye fire asle token banano - 1 bar e, bar bar na
   useEffect(() => {
-    if (session?.user?.email) {
-      getJwtToken(session.user.email);
+    if (userEmail && !tokenFetched.current) {
+      tokenFetched.current = true;
+      getJwtToken(userEmail);
     }
-  }, [session]);
+    if (!userEmail) {
+      tokenFetched.current = false;
+    }
+  }, [userEmail]);
 
   async function handleLogin(e) {
     e.preventDefault();
@@ -28,12 +34,11 @@ export default function LoginPage() {
       if (res?.error) {
         toast.error(res.error.message || "Login failed");
       } else {
-        // Purano token muche notun JWT banao - eitai asol fix
+        // Purano token muche notun JWT banao
         clearToken();
         await getJwtToken(email);
         toast.success("Login successful!");
         router.push("/");
-        router.refresh();
       }
     } catch (err) {
       toast.error("Login failed");

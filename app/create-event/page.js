@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { createEvent } from "@/lib/api";
@@ -10,7 +10,9 @@ const TYPES = ["Cleanup", "Plantation", "Donation", "Blood", "Education", "Winte
 export default function CreateEventPage() {
   const { data: session, isPending } = useSession();
   const user = session?.user;
+  const userEmail = session?.user?.email;
   const router = useRouter();
+  const redirected = useRef(false);
 
   const [form, setForm] = useState({
     title: "",
@@ -22,13 +24,17 @@ export default function CreateEventPage() {
   });
   const [loading, setLoading] = useState(false);
 
-  // Login na thakle login e pathao
+  // Login na thakle 1 bar e login e pathao, bar bar na
   useEffect(() => {
-    if (!isPending && !user) {
+    if (!isPending && !userEmail && !redirected.current) {
+      redirected.current = true;
       toast.error("Please login first to create an event", { id: "login-required" });
       router.push("/login");
     }
-  }, [isPending, user, router]);
+    if (userEmail) {
+      redirected.current = false;
+    }
+  }, [isPending, userEmail, router]);
 
   function onChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
