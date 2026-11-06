@@ -24,6 +24,8 @@ export default function CreateEventPage() {
   });
   const [loading, setLoading] = useState(false);
 
+  const todayStr = new Date().toISOString().split("T")[0];
+
   // Login na thakle 1 bar e login e pathao, bar bar na
   useEffect(() => {
     if (!isPending && !userEmail && !redirected.current) {
@@ -46,7 +48,8 @@ export default function CreateEventPage() {
       toast.error("Please login first to create an event", { id: "login-required" });
       return router.push("/login");
     }
-    if (!form.title || !form.eventType || !form.location || !form.eventDate || !form.description) {
+    // FIX: thumbnail o required - server o thumbnail chay
+    if (!form.title || !form.eventType || !form.location || !form.eventDate || !form.thumbnail || !form.description) {
       return toast.error("Please fill all required fields");
     }
     if (new Date(form.eventDate) < new Date(new Date().toDateString())) {
@@ -104,7 +107,7 @@ export default function CreateEventPage() {
             </div>
             <div>
               <label className="text-sm font-bold">Event Date *</label>
-              <input name="eventDate" value={form.eventDate} onChange={onChange} type="date" className="w-full mt-1 px-4 py-3 rounded-xl border bg-slate-50 dark:bg-slate-800 outline-none text-sm" />
+              <input name="eventDate" value={form.eventDate} onChange={onChange} type="date" min={todayStr} className="w-full mt-1 px-4 py-3 rounded-xl border bg-slate-50 dark:bg-slate-800 outline-none text-sm" />
             </div>
           </div>
 
@@ -114,7 +117,7 @@ export default function CreateEventPage() {
           </div>
 
           <div>
-            <label className="text-sm font-bold">Thumbnail Image URL</label>
+            <label className="text-sm font-bold">Thumbnail Image URL *</label>
             <input name="thumbnail" value={form.thumbnail} onChange={onChange} placeholder="https://images.unsplash.com/..." className="w-full mt-1 px-4 py-3 rounded-xl border bg-slate-50 dark:bg-slate-800 outline-none text-sm" />
             {form.thumbnail && (
               <img src={form.thumbnail} alt="Preview" className="w-full h-48 object-cover rounded-xl mt-3" />
