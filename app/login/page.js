@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
-import Link from "【entity-next¦canonical_name=next】/link";
-import { useRouter } from "【entity-next¦canonical_name=next】/navigation";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { signIn, signInWithGoogle } from "@/lib/auth-client";
 import toast from "react-hot-toast";
 
@@ -13,18 +13,17 @@ export default function LoginPage() {
 
   async function handleLogin(e) {
     e.preventDefault();
-    if (!email || !password) return toast.error("Please fill all fields");
     setLoading(true);
     try {
       const res = await signIn.email({ email, password });
-      if (res.error) {
+      if (res?.error) {
         toast.error(res.error.message || "Login failed");
       } else {
-        toast.success("Logged in successfully!");
+        toast.success("Login successful!");
         router.push("/");
       }
-    } catch {
-      toast.error("Login failed, try again");
+    } catch (err) {
+      toast.error("Login failed");
     } finally {
       setLoading(false);
     }
@@ -33,46 +32,71 @@ export default function LoginPage() {
   async function handleGoogle() {
     try {
       await signInWithGoogle();
-    } catch {
+    } catch (err) {
       toast.error("Google login failed");
     }
   }
 
   return (
-    <div className="max-w-md mx-auto px-4 py-10">
-      <div className="bg-white dark:bg-slate-900 border rounded-[1.5rem] p-6 sm:p-8">
-        <div className="text-center">
-          <span className="w-12 h-12 mx-auto rounded-full bg-[#1E3A8A] text-white flex items-center justify-center text-2xl font-black">M</span>
-          <h1 className="text-2xl font-black mt-3">Welcome Back</h1>
-          <p className="text-sm text-slate-500 mt-1">Login to ManobSheba</p>
-        </div>
+    <div className="min-h-screen flex items-center justify-center px-4 py-10 bg-[#F0F7FF] dark:bg-slate-950">
+      <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-xl p-6 sm:p-8 border border-blue-100 dark:border-slate-800">
+        <h1 className="text-3xl font-black text-center text-slate-900 dark:text-white">
+          Welcome Back
+        </h1>
+        <p className="text-center text-slate-500 mt-2 text-sm">
+          Login to ManobSheba to join events
+        </p>
 
         <form onSubmit={handleLogin} className="mt-6 space-y-4">
           <div>
-            <label className="text-sm font-bold">Email</label>
-            <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Enter your email" className="w-full mt-1 px-4 py-3 rounded-xl border bg-slate-50 dark:bg-slate-800 outline-none text-sm" />
+            <label className="block text-sm font-bold mb-1">Email</label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none"
+            />
           </div>
           <div>
-            <label className="text-sm font-bold">Password</label>
-            <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Enter your password" className="w-full mt-1 px-4 py-3 rounded-xl border bg-slate-50 dark:bg-slate-800 outline-none text-sm" />
+            <label className="block text-sm font-bold mb-1">Password</label>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Your password"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none"
+            />
           </div>
-          <button disabled={loading} className="w-full bg-[#1E3A8A] text-white font-bold py-3.5 rounded-full text-sm disabled:opacity-60">
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-[#1E3A8A] hover:bg-blue-900 text-white font-bold py-3 rounded-xl disabled:opacity-50"
+          >
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
         <div className="flex items-center gap-3 my-5">
-          <span className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
+          <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
           <span className="text-xs text-slate-400">OR</span>
-          <span className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
+          <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
         </div>
 
-        <button onClick={handleGoogle} className="w-full border font-bold py-3.5 rounded-full text-sm flex items-center justify-center gap-2">
-          <span className="text-lg">G</span> Continue with Google
+        <button
+          onClick={handleGoogle}
+          className="w-full py-3 rounded-xl border border-slate-200 dark:border-slate-700 font-bold flex items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800"
+        >
+          Continue with Google
         </button>
 
         <p className="text-center text-sm mt-5 text-slate-500">
-          Don&apos;t have an account? <Link href="/register" className="text-[#1E3A8A] dark:text-emerald-400 font-bold">Register</Link>
+          Don&apos;t have an account?{" "}
+          <Link href="/register" className="text-blue-800 dark:text-emerald-400 font-bold">
+            Register
+          </Link>
         </p>
       </div>
     </div>
