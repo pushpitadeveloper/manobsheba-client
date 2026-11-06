@@ -1,8 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signUp, signInWithGoogle } from "@/lib/auth-client";
+import { signUp, signIn, useSession } from "@/lib/auth-client";
+import { getJwtToken, clearToken } from "@/lib/api";
 import toast from "react-hot-toast";
 
 export default function RegisterPage() {
@@ -11,7 +12,30 @@ export default function RegisterPage() {
   const [photo, setPhoto] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const router = useRouter();
+  const { data: session } = useSession();
+  const userEmail = session?.user?.email;
+  const tokenFetched = useRef(false);
+
+  // Google diye fire asle token banano + home e pathano
+  useEffect(() => {
+    if (userEmail && !tokenFetched.current) {
+      tokenFetched.current = true;
+      (async () => {
+        try {
+          await getJwtToken(userEmail);
+          toast.success("Login successful!");
+          router.push("/");
+        } catch {
+          toast.error("Failed to create session token");
+        }
+      })();
+    }
+    if (!userEmail) {
+      tokenFetched.current = false;
+    }
+  }, [userEmail, router]);
 
   async function handleRegister(e) {
     e.preventDefault();
@@ -22,15 +46,19 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
+      const cleanEmail = email.trim().toLowerCase();
       const res = await signUp.email({
-        name,
-        email,
+        name: name.trim(),
+        email: cleanEmail,
         password,
         image: photo || undefined,
       });
       if (res.error) {
         toast.error(res.error.message || "Register failed");
       } else {
+        // FIX: Register er por o JWT lagbe, nahole Create Event e Unauthorized asbe
+        clearToken();
+        await getJwtToken(cleanEmail);
         toast.success("Account created successfully!");
         router.push("/");
       }
@@ -38,6 +66,17 @@ export default function RegisterPage() {
       toast.error("Register failed, try again");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleGoogle() {
+    setGoogleLoading(true);
+    try {
+      // FIX: custom helper na, standard social login + callback
+      await signIn.social({ provider: "google", callbackURL: "/login" });
+    } catch {
+      toast.error("Google login failed");
+      setGoogleLoading(false);
     }
   }
 
@@ -79,8 +118,8 @@ export default function RegisterPage() {
           <span className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
         </div>
 
-        <button onClick={signInWithGoogle} className="w-full border font-bold py-3.5 rounded-full text-sm flex items-center justify-center gap-2">
-          <span className="text-lg">G</span> Continue with Google
+        <button onClick={handleGoogle} disabled={googleLoading} className="w-full border font-bold py-3.5 rounded-full text-sm flex items-center justify-center gap-2 disabled:opacity-50">
+          <span className="text-lg">G</span> {googleLoading ? "Connecting to Google..." : "Continue with Google"}
         </button>
 
         <p className="text-center text-sm mt-5 text-slate-500">
