@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signIn, signInWithGoogle, useSession } from "@/lib/auth-client";
+import { signIn, useSession } from "@/lib/auth-client";
 import { getJwtToken, clearToken } from "@/lib/api";
 import toast from "react-hot-toast";
 
@@ -10,33 +10,43 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const router = useRouter();
   const { data: session } = useSession();
   const userEmail = session?.user?.email;
   const tokenFetched = useRef(false);
 
-  // Google diye fire asle token banano - 1 bar e, bar bar na
+  // Google diye fire asle token banano + home e pathano - 1 bar e, bar bar na
   useEffect(() => {
     if (userEmail && !tokenFetched.current) {
       tokenFetched.current = true;
-      getJwtToken(userEmail);
+      (async () => {
+        try {
+          await getJwtToken(userEmail);
+          toast.success("Login successful!");
+          router.push("/");
+        } catch {
+          toast.error("Failed to create session token");
+        }
+      })();
     }
     if (!userEmail) {
       tokenFetched.current = false;
     }
-  }, [userEmail]);
+  }, [userEmail, router]);
 
   async function handleLogin(e) {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await signIn.email({ email, password });
+      const cleanEmail = email.trim().toLowerCase();
+      const res = await signIn.email({ email: cleanEmail, password });
       if (res?.error) {
         toast.error(res.error.message || "Login failed");
       } else {
         // Purano token muche notun JWT banao
         clearToken();
-        await getJwtToken(email);
+        await getJwtToken(cleanEmail);
         toast.success("Login successful!");
         router.push("/");
       }
@@ -48,10 +58,14 @@ export default function LoginPage() {
   }
 
   async function handleGoogle() {
+    setGoogleLoading(true);
     try {
-      await signInWithGoogle();
+      // FIX: custom signInWithGoogle er upor nirvor na kore standard social login
+      // Google page e jabe, fire asle uporer useEffect token banay home e pathabe
+      await signIn.social({ provider: "google", callbackURL: "/login" });
     } catch (err) {
       toast.error("Google login failed");
+      setGoogleLoading(false);
     }
   }
 
@@ -105,9 +119,10 @@ export default function LoginPage() {
 
         <button
           onClick={handleGoogle}
-          className="w-full py-3 rounded-xl border border-slate-200 dark:border-slate-700 font-bold flex items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800"
+          disabled={googleLoading}
+          className="w-full py-3 rounded-xl border border-slate-200 dark:border-slate-700 font-bold flex items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50"
         >
-          Continue with Google
+          {googleLoading ? "Connecting to Google..." : "Continue with Google"}
         </button>
 
         <p className="text-center text-sm mt-5 text-slate-500">
