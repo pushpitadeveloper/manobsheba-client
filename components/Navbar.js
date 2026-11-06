@@ -47,7 +47,7 @@ function NavbarContent() {
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 dark:bg-slate-950/95 backdrop-blur border-b border-blue-100 dark:border-slate-800">
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5 flex items-center justify-between gap-3">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between gap-3">
         <Link href="/" className="flex items-center gap-2 shrink-0">
           <span className="w-10 h-10 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center text-xl font-black">M</span>
           <span className="text-xl md:text-2xl font-black tracking-tight text-slate-900 dark:text-white">Manob<span className="text-emerald-500">Sheba</span></span>

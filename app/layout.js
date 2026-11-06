@@ -5,14 +5,17 @@ import Providers from "@/components/Providers";
 import { Toaster } from "react-hot-toast";
 
 export const metadata = {
-  title: "ManobSheba - Manusher Pase, Manobotar Jonno",
-  description: "Social Development Events Platform",
+  title: "ManobSheba - Stand Beside People. Serve Humanity.",
+  description: "Manusher pase, manobotar jonno. Join blood donation, teaching, cleanup and relief events across Bangladesh.",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body suppressHydrationWarning className="bg-[#F0F7FF] dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+      <body
+        suppressHydrationWarning
+        className="bg-[#F0F7FF] dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased min-h-screen flex flex-col"
+      >
         <Providers>
           <Navbar />
           <main className="flex-1">{children}</main>
