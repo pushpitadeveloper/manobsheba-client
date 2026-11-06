@@ -26,7 +26,11 @@ function EditContent({ params }) {
   const [saving, setSaving] = useState(false);
   const fetched = useRef(false);
 
-  const todayStr = new Date().toISOString().split("T")[0];
+ const [todayStr, setTodayStr] = useState("");
+
+useEffect(() => {
+  setTodayStr(new Date().toISOString().split("T")[0]);
+}, []);
 
   // Event load
   useEffect(() => {
@@ -73,7 +77,7 @@ function EditContent({ params }) {
       return;
     }
     // Assignment: date present + future hote hobe
-    if (new Date(form.eventDate) < new Date(todayStr)) {
+    if (new Date(form.eventDate) < new Date(new Date().toDateString())) {
       toast.error("Event date must be present and future");
       return;
     }

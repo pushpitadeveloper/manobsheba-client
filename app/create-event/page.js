@@ -23,8 +23,12 @@ export default function CreateEventPage() {
     description: "",
   });
   const [loading, setLoading] = useState(false);
+  // FIX: render e new Date() na - useEffect e set koro
+  const [todayStr, setTodayStr] = useState("");
 
-  const todayStr = new Date().toISOString().split("T")[0];
+  useEffect(() => {
+    setTodayStr(new Date().toISOString().split("T")[0]);
+  }, []);
 
   // Login na thakle 1 bar e login e pathao, bar bar na
   useEffect(() => {
@@ -48,10 +52,10 @@ export default function CreateEventPage() {
       toast.error("Please login first to create an event", { id: "login-required" });
       return router.push("/login");
     }
-    // FIX: thumbnail o required - server o thumbnail chay
     if (!form.title || !form.eventType || !form.location || !form.eventDate || !form.thumbnail || !form.description) {
       return toast.error("Please fill all required fields");
     }
+    // FIX: date check tao handler er vitore - render e na
     if (new Date(form.eventDate) < new Date(new Date().toDateString())) {
       return toast.error("Please select a future date");
     }
