@@ -1,98 +1,111 @@
 "use client";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useSession, signOut } from "@/lib/auth-client";
-import { useTheme } from "next-themes";
+import { useRouter, usePathname } from "next/navigation";
+import { signOut, useSession } from "@/lib/auth-client";
 import { clearToken } from "@/lib/api";
+import toast from "react-hot-toast";
 
 function NavbarContent() {
-  const { data: session, isPending } = useSession();
-  const user = session?.user;
-  const pathname = usePathname();
-  const router = useRouter();
-  const { theme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
-  const [mobile, setMobile] = useState(false);
+  const [drop, setDrop] = useState(false);
+  const [theme, setTheme] = useState("light");
+  const router = useRouter();
+  const pathname = usePathname();
+  const { data: session } = useSession();
+  const user = session?.user;
 
-  const isActive = (path) => pathname === path ? "text-[#1E3A8A] dark:text-white font-bold" : "text-slate-600 dark:text-slate-300";
+  useEffect(() => {
+    const saved = localStorage.getItem("manobsheba-theme") || "light";
+    setTheme(saved);
+  }, []);
 
-  const handleLogout = async () => {
+  function toggleTheme() {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    localStorage.setItem("manobsheba-theme", next);
+    if (next === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }
+
+  async function handleLogout() {
     await signOut();
     clearToken();
+    toast.success("Logged out successfully");
+    setDrop(false);
     setOpen(false);
     router.push("/");
-  };
+  }
+
+  const linkCls = (href) =>
+    pathname === href
+      ? "text-blue-800 dark:text-emerald-400 font-bold"
+      : "text-slate-600 dark:text-slate-300 hover:text-blue-800 font-medium";
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur border-b border-slate-200 dark:border-slate-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5 flex items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-3 shrink-0">
-          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center font-black text-xl">M</div>
-          <div className="leading-tight">
-            <p className="font-black text- sm:text- text-[#1E3A8A] dark:text-white">ManobSheba</p>
-            <p className="hidden sm:block text- text-slate-500">Manusher pase, manobotar jonno</p>
-          </div>
+    <header className="sticky top-0 z-50 bg-white/95 dark:bg-slate-950/95 backdrop-blur border-b border-blue-100 dark:border-slate-800">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5 flex items-center justify-between gap-3">
+        <Link href="/" className="flex items-center gap-2 shrink-0">
+          <span className="w-10 h-10 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center text-xl font-black">M</span>
+          <span className="text-xl md:text-2xl font-black tracking-tight text-slate-900 dark:text-white">Manob<span className="text-emerald-500">Sheba</span></span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-7 text- font-medium">
-          <Link href="/" className={`${isActive("/")} hover:text-[#1E3A8A]`}>Home</Link>
-          <Link href="/upcoming" className={`${isActive("/upcoming")} hover:text-[#1E3A8A]`}>Upcoming</Link>
-          {user && <Link href="/create" className={`${isActive("/create")} hover:text-[#1E3A8A]`}>Create Event</Link>}
-        </nav>
+        <div className="hidden md:flex items-center gap-7">
+          <Link href="/" className={linkCls("/")}>Home</Link>
+          <Link href="/upcoming" className={linkCls("/upcoming")}>Upcoming Events</Link>
+        </div>
 
-        <div className="flex items-center gap-2 sm:gap-3">
-          <button
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="w-9 h-9 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center text-lg"
-            aria-label="Toggle theme"
-          >
-            {theme === "dark" ? "☀️" : "🌙"}
+        <div className="flex items-center gap-2 md:gap-3">
+          <button onClick={toggleTheme} className="w-9 h-9 rounded-full bg-blue-100 dark:bg-slate-800 flex items-center justify-center text-lg" aria-label="Toggle theme">
+            {theme === "dark" ? "☀" : "🌙"}
           </button>
 
-          {isPending ? (
-            <div className="w-9 h-9 rounded-full bg-slate-200 animate-pulse" />
-          ) : user ? (
+          {!user ? (
+            <Link href="/login" className="hidden sm:inline-block bg-[#1E3A8A] hover:bg-blue-900 text-white font-bold px-5 py-2.5 rounded-full text-sm">Login</Link>
+          ) : (
             <div className="relative">
-              <button onClick={() => setOpen(!open)} className="flex items-center gap-2 group">
-                {user.image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={user.image} alt={user.name} className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-[#10B981]" />
-                ) : (
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#10B981] text-white flex items-center justify-center font-bold">{user.name?.[0]?.toUpperCase()}</div>
-                )}
-                <span className="hidden lg:block max-w- truncate text-sm font-semibold group-hover:text-[#1E3A8A]">{user.name}</span>
+              <button onClick={() => setDrop(!drop)} className="flex items-center gap-2" title={user.name}>
+                <img src={user.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || "User")}&background=1E3A8A&color=fff`} alt={user.name} className="w-10 h-10 rounded-full object-cover border-2 border-emerald-400" />
+                <span className="hidden lg:block text-sm font-bold max-w- truncate">{user.name}</span>
                 <span className="text-xs">▼</span>
               </button>
-              {open && (
-                <div className="absolute right-0 top- w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl py-2 text-sm z-50">
-                  <Link href="/create" onClick={() => setOpen(false)} className="block px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Create Event</Link>
-                  <Link href="/manage" onClick={() => setOpen(false)} className="block px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Manage Events</Link>
-                  <Link href="/joined" onClick={() => setOpen(false)} className="block px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Joined Events</Link>
-                  <Link href="/profile" onClick={() => setOpen(false)} className="block px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Profile</Link>
-                  <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">Logout</button>
+              {drop && (
+                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-blue-100 dark:border-slate-800 p-2">
+                  <p className="px-3 py-2 text-sm font-bold truncate">{user.name}</p>
+                  <p className="px-3 pb-2 text-xs text-slate-500 truncate">{user.email}</p>
+                  <Link href="/create-event" onClick={() => setDrop(false)} className="block px-3 py-2.5 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 font-medium text-sm">Create Event</Link>
+                  <Link href="/manage-events" onClick={() => setDrop(false)} className="block px-3 py-2.5 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 font-medium text-sm">Manage Events</Link>
+                  <Link href="/joined-events" onClick={() => setDrop(false)} className="block px-3 py-2.5 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 font-medium text-sm">Joined Events</Link>
+                  <Link href="/profile" onClick={() => setDrop(false)} className="block px-3 py-2.5 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-800 font-medium text-sm">My Profile</Link>
+                  <button onClick={handleLogout} className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-rose-50 text-rose-600 font-medium text-sm">Logout</button>
                 </div>
               )}
             </div>
-          ) : (
-            <Link href="/login" className="bg-[#1E3A8A] text-white px-4 sm:px-5 py-2 rounded-full text-sm font-semibold hover:bg-[#162E6B]">Login</Link>
           )}
 
-          <button onClick={() => setMobile(!mobile)} className="md:hidden w-9 h-9 flex items-center justify-center text-xl">☰</button>
+          <button onClick={() => setOpen(!open)} className="md:hidden w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xl" aria-label="Menu">
+            {open ? "✕" : "☰"}
+          </button>
         </div>
-      </div>
+      </nav>
 
-      {mobile && (
-        <div className="md:hidden border-t px-4 py-3 flex flex-col gap-3 text-sm font-medium bg-white dark:bg-slate-900">
-          <Link href="/" onClick={() => setMobile(false)}>Home</Link>
-          <Link href="/upcoming" onClick={() => setMobile(false)}>Upcoming</Link>
-          {user && (
+      {open && (
+        <div className="md:hidden border-t border-blue-100 dark:border-slate-800 px-4 py-4 space-y-1 bg-white dark:bg-slate-950">
+          <Link href="/" onClick={() => setOpen(false)} className="block px-3 py-3 rounded-xl font-bold hover:bg-blue-50 dark:hover:bg-slate-800">Home</Link>
+          <Link href="/upcoming" onClick={() => setOpen(false)} className="block px-3 py-3 rounded-xl font-bold hover:bg-blue-50 dark:hover:bg-slate-800">Upcoming Events</Link>
+          {user ? (
             <>
-              <Link href="/create" onClick={() => setMobile(false)}>Create Event</Link>
-              <Link href="/manage" onClick={() => setMobile(false)}>Manage Events</Link>
-              <Link href="/joined" onClick={() => setMobile(false)}>Joined Events</Link>
-              <Link href="/profile" onClick={() => setMobile(false)}>Profile</Link>
+              <Link href="/create-event" onClick={() => setOpen(false)} className="block px-3 py-3 rounded-xl font-bold hover:bg-blue-50 dark:hover:bg-slate-800">Create Event</Link>
+              <Link href="/manage-events" onClick={() => setOpen(false)} className="block px-3 py-3 rounded-xl font-bold hover:bg-blue-50 dark:hover:bg-slate-800">Manage Events</Link>
+              <Link href="/joined-events" onClick={() => setOpen(false)} className="block px-3 py-3 rounded-xl font-bold hover:bg-blue-50 dark:hover:bg-slate-800">Joined Events</Link>
+              <Link href="/profile" onClick={() => setOpen(false)} className="block px-3 py-3 rounded-xl font-bold hover:bg-blue-50 dark:hover:bg-slate-800">My Profile</Link>
+              <button onClick={handleLogout} className="w-full text-left px-3 py-3 rounded-xl font-bold text-rose-600">Logout</button>
             </>
+          ) : (
+            <Link href="/login" onClick={() => setOpen(false)} className="block text-center bg-[#1E3A8A] text-white font-bold px-3 py-3 rounded-full mt-2">Login</Link>
           )}
         </div>
       )}
@@ -102,7 +115,7 @@ function NavbarContent() {
 
 export default function Navbar() {
   return (
-    <Suspense>
+    <Suspense fallback={<header className="h- bg-white dark:bg-slate-950 border-b border-blue-100 dark:border-slate-800" />}>
       <NavbarContent />
     </Suspense>
   );
