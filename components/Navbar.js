@@ -1,35 +1,19 @@
 "use client";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { signOut, useSession } from "@/lib/auth-client";
 import { clearToken } from "@/lib/api";
 import toast from "react-hot-toast";
+import ThemeToggle from "./ThemeToggle";
 
 function NavbarContent() {
   const [open, setOpen] = useState(false);
   const [drop, setDrop] = useState(false);
-  const [theme, setTheme] = useState("light");
   const router = useRouter();
   const pathname = usePathname();
   const { data: session } = useSession();
   const user = session?.user;
-
-  useEffect(() => {
-    const saved = localStorage.getItem("manobsheba-theme") || "light";
-    setTheme(saved);
-  }, []);
-
-  function toggleTheme() {
-    const next = theme === "dark" ? "light" : "dark";
-    setTheme(next);
-    localStorage.setItem("manobsheba-theme", next);
-    if (next === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }
 
   async function handleLogout() {
     await signOut();
@@ -59,9 +43,7 @@ function NavbarContent() {
         </div>
 
         <div className="flex items-center gap-2 md:gap-3">
-          <button onClick={toggleTheme} className="w-9 h-9 rounded-full bg-blue-100 dark:bg-slate-800 flex items-center justify-center text-lg" aria-label="Toggle theme">
-            {theme === "dark" ? "☀" : "🌙"}
-          </button>
+          <ThemeToggle />
 
           {!user ? (
             <Link href="/login" className="hidden sm:inline-block bg-[#1E3A8A] hover:bg-blue-900 text-white font-bold px-5 py-2.5 rounded-full text-sm">Login</Link>
