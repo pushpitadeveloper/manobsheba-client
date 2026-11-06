@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { getEventById, updateEvent } from "@/lib/api";
 import toast from "react-hot-toast";
+export const dynamic = "force-dynamic";
 
 const TYPES = ["Cleanup", "Plantation", "Donation", "Blood", "Education", "Winter Relief", "Health", "Food"];
 
