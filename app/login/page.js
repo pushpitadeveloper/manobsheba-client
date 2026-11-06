@@ -1,8 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signIn, signInWithGoogle } from "@/lib/auth-client";
+import { signIn, signInWithGoogle, useSession } from "@/lib/auth-client";
+import { getJwtToken, clearToken } from "@/lib/api";
 import toast from "react-hot-toast";
 
 export default function LoginPage() {
@@ -10,6 +11,14 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { data: session } = useSession();
+
+  // Google diye fire asle token banano
+  useEffect(() => {
+    if (session?.user?.email) {
+      getJwtToken(session.user.email);
+    }
+  }, [session]);
 
   async function handleLogin(e) {
     e.preventDefault();
@@ -19,8 +28,12 @@ export default function LoginPage() {
       if (res?.error) {
         toast.error(res.error.message || "Login failed");
       } else {
+        // Purano token muche notun JWT banao - eitai asol fix
+        clearToken();
+        await getJwtToken(email);
         toast.success("Login successful!");
         router.push("/");
+        router.refresh();
       }
     } catch (err) {
       toast.error("Login failed");

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { createEvent } from "@/lib/api";
@@ -22,6 +22,14 @@ export default function CreateEventPage() {
   });
   const [loading, setLoading] = useState(false);
 
+  // Login na thakle login e pathao
+  useEffect(() => {
+    if (!isPending && !user) {
+      toast.error("Please login first to create an event", { id: "login-required" });
+      router.push("/login");
+    }
+  }, [isPending, user, router]);
+
   function onChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
@@ -35,6 +43,9 @@ export default function CreateEventPage() {
     if (!form.title || !form.eventType || !form.location || !form.eventDate || !form.description) {
       return toast.error("Please fill all required fields");
     }
+    if (new Date(form.eventDate) < new Date(new Date().toDateString())) {
+      return toast.error("Please select a future date");
+    }
 
     setLoading(true);
     try {
@@ -43,15 +54,15 @@ export default function CreateEventPage() {
         creatorEmail: user.email,
         creatorName: user.name,
       };
-      const res = await createEvent(payload);
+      const res = await createEvent(payload, user.email);
       if (res?.insertedId || res?.acknowledged || res?._id) {
         toast.success("Event created successfully!");
         router.push("/upcoming");
       } else {
         toast.error(res?.message || "Failed to create event");
       }
-    } catch {
-      toast.error("Failed to create event");
+    } catch (err) {
+      toast.error(err.message || "Failed to create event");
     } finally {
       setLoading(false);
     }
@@ -62,8 +73,6 @@ export default function CreateEventPage() {
   }
 
   if (!user) {
-    toast.error("Please login first to create an event", { id: "login-required" });
-    router.push("/login");
     return null;
   }
 
